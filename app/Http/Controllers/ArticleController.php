@@ -2,47 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
-    private $articles = [
-        1 => [
-            'id' => 1,
-            'title' => 'Primo Articolo su Laravel',
-            'description' => 'Un\'introduzione alla struttura del framework.',
-            'content' => 'Contenuto dettagliato del primo articolo. Laravel rende lo sviluppo web veloce ed elegante.'
-        ],
-        2 => [
-            'id' => 2,
-            'title' => 'Componenti Anonimi in Blade',
-            'description' => 'Come organizzare al meglio le viste del tuo blog.',
-            'content' => 'I componenti anonimi ti permettono di definire blocchi riutilizzabili senza creare classi PHP dedicate.'
-        ],
-        3 => [
-            'id' => 3,
-            'title' => 'Iniziare con Vite e Bootstrap',
-            'description' => 'Guida all\'integrazione dei CSS e JS nel tuo progetto.',
-            'content' => 'Vite sostituisce Laravel Mix offrendo una compilazione ultra-veloce dei file frontend.'
-        ],
-    ];
-
-    public function home()
-    {
-        return view('welcome');
-    }
-
     public function index()
     {
-        return view('articles.index', ['articles' => $this->articles]);
+        $articles = Article::all();
+        return view('articles.index', compact('articles'));
     }
 
-    public function show($id)
+    public function create()
     {
-        if (!isset($this->articles[$id])) {
-            abort(404);
-        }
+        return view('articles.create');
+    }
 
-        return view('articles.show', ['article' => $this->articles[$id]]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required',
+            'content' => 'required',
+        ]);
+
+        Article::create($request->all());
+
+        return redirect()->route('articles.index')->with('success', 'Articolo creato con successo!');
+    }
+
+    public function show(Article $article)
+    {
+        return view('articles.show', compact('article'));
+    }
+
+    public function edit(Article $article)
+    {
+        return view('articles.edit', compact('article'));
+    }
+
+    public function update(Request $request, Article $article)
+    {
+        $request->validate([
+            'title' => 'required',
+            'content' => 'required',
+        ]);
+
+        $article->update($request->all());
+
+        return redirect()->route('articles.index')->with('success', 'Articolo aggiornato con successo!');
+    }
+
+    public function destroy(Article $article)
+    {
+        $article->delete();
+
+        return redirect()->route('articles.index')->with('success', 'Articolo eliminato con successo!');
     }
 }
