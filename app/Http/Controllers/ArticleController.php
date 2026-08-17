@@ -26,6 +26,13 @@ class ArticleController extends Controller
         ]);
 
         Article::create($request->all());
+        Auth::user()->articles()->create([
+        'title' => $request->title,
+        'category' => $request->category,
+        'description' => $request->description,
+        'content' => $request->content,
+        'image' => $request->image,
+    ]);
 
         return redirect()->route('articles.index')->with('success', 'Articolo creato con successo!');
     }
