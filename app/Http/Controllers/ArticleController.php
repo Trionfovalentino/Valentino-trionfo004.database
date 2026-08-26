@@ -7,44 +7,41 @@ use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
+
     public function index()
     {
         $articles = Article::all();
-        return view('articles.index', compact('articles'));
+        return view('article.index', compact('articles'));
     }
 
     public function create()
     {
-        return view('articles.create');
+        return view('article.create');
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required',
-            'content' => 'required',
-        ]);
+    {$request->validate([
+        'title' => 'required',
+        'content' => 'required',
+    ]);
 
-        Article::create($request->all());
-        Auth::user()->articles()->create([
+    Auth::user()->articles()->create([
         'title' => $request->title,
-        'category' => $request->category,
-        'description' => $request->description,
+        'subtitle' => $request->subtitle,
         'content' => $request->content,
         'image' => $request->image,
     ]);
 
-        return redirect()->route('articles.index')->with('success', 'Articolo creato con successo!');
-    }
+    return redirect()->route('articles.index')->with('success', 'Articolo creato con successo!');  }
 
     public function show(Article $article)
     {
-        return view('articles.show', compact('article'));
+        return view('article.show', compact('article'));
     }
 
     public function edit(Article $article)
     {
-        return view('articles.edit', compact('article'));
+        return view('article.edit', compact('article'));
     }
 
     public function update(Request $request, Article $article)
@@ -56,13 +53,12 @@ class ArticleController extends Controller
 
         $article->update($request->all());
 
-        return redirect()->route('articles.index')->with('success', 'Articolo aggiornato con successo!');
+        return redirect()->route('article.index')->with('success', 'Articolo aggiornato!');
     }
 
     public function destroy(Article $article)
     {
         $article->delete();
-
-        return redirect()->route('articles.index')->with('success', 'Articolo eliminato con successo!');
+        return redirect()->route('article.index')->with('success', 'Articolo eliminato!');
     }
 }
