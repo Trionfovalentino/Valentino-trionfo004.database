@@ -4,61 +4,79 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ArticleController extends Controller
 {
-
     public function index()
     {
         $articles = Article::all();
-        return view('article.index', compact('articles'));
+        return view('articles.index', compact('articles'));
     }
 
     public function create()
     {
-        return view('article.create');
+        return view('articles.create');
     }
 
     public function store(Request $request)
-    {$request->validate([
-        'title' => 'required',
-        'content' => 'required',
-    ]);
+    {
+        $request->validate([
+            'title' => 'required',
+            'subtitle' => 'nullable',
+            'content' => 'required',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+        ]);
 
-    Auth::user()->articles()->create([
-        'title' => $request->title,
-        'subtitle' => $request->subtitle,
-        'content' => $request->content,
-        'image' => $request->image,
-    ]);
+        $data = $request->all();
 
-    return redirect()->route('articles.index')->with('success', 'Articolo creato con successo!');  }
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('articles', 'public');
+        }
+
+        if (Auth::check()) {
+            $data['user_id'] = Auth::id();
+        }
+
+        Article::create($data);
+
+        return redirect()->route('articles.index')->with('success', 'Articolo creato con successo!');
+    }
 
     public function show(Article $article)
     {
-        return view('article.show', compact('article'));
+        return view('articles.show', compact('article'));
     }
 
     public function edit(Article $article)
     {
-        return view('article.edit', compact('article'));
+        return view('articles.edit', compact('article'));
     }
 
     public function update(Request $request, Article $article)
     {
         $request->validate([
             'title' => 'required',
+            'subtitle' => 'nullable',
             'content' => 'required',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
-        $article->update($request->all());
+        $data = $request->all();
 
-        return redirect()->route('article.index')->with('success', 'Articolo aggiornato!');
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('articles', 'public');
+        }
+
+        $article->update($data);
+
+        return redirect()->route('articles.index')->with('success', 'Articolo aggiornato con successo!');
     }
 
     public function destroy(Article $article)
     {
         $article->delete();
-        return redirect()->route('article.index')->with('success', 'Articolo eliminato!');
+
+        return redirect()->route('articles.index')->with('success', 'Articolo eliminato con successo!');
     }
 }
